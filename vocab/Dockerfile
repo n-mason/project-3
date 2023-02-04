@@ -1,5 +1,5 @@
 FROM python:3.8
-LABEL maintainer=Nathaniel Mason "nmason@uoregon.edu"
+MAINTAINER Nathaniel Mason "nmason@uoregon.edu"
 RUN apt-get update -y
 COPY . /app
 WORKDIR /app
