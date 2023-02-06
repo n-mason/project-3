@@ -84,7 +84,8 @@
          <br />
          <h2>You found </h2>
          <p id="results"></p>
-         
+         <br>
+         <br>
          <p id="message"></p>
 
          <script>
@@ -119,6 +120,7 @@
                           function(data) {
                               
                               //Each of the following vars are a bool
+                              //console.log(window.location.href)
                               
                               new_msg = data.result.new_msg_found
                               already_found = data.result.msg_found_already
@@ -147,26 +149,26 @@
                               }
                               */
                              
-                              if(new_msg) {
+                              //expected behaviro is notify if word not in vocab, or word not possible from lettters listed
+                              //and if a word is found from the letters listed, add it on the page
+                              if(new_msg) { //a word was found
                                  $("#attempt").val(""); //Reset the input
-                                 $("#results").append("<h3><b>"+txt+"</b></h3> ");
+                                 $("#results").append("<h4><b>"+txt+"</b></h4>");
                               }
-                              else if(already_found) {
+                              else if(already_found) { //word
                                  $("#message").html("You already found the word: " + "<b>"+txt+"</b>" + "<br>");
                               }
-                              /*
                               else if(not_in_vocab) {
-                                 $("#message").append(txt + " isn't in the list of words" + <br />);
+                                 $("#message").append("<b>"+txt+"</b>" + " isn't in the list of words" + "<br>");
                               }
-                              */
                               else if(msg_forbidden) {
-                                 $("#message").append("<b>"+txt+"</b>" + " can't be made from the letters listed above <br>");
+                                 $("#message").append("<b>"+txt+"</b>" + " can't be made from the letters listed above in the anagram <br>");
                               }
 
                               if(goal) {
-                                 $("#message").value = "";
-                                 $("#message").html("YOU COMPLETED THE GOAL!, need to redirect to success page<br>");
-                                 //window.location.href = "/success.html"
+                                 //$("#message").value = "";
+                                 //$("#message").html("YOU COMPLETED THE GOAL!, need to redirect to success page<br>");
+                                 window.location.href = "/success"
                               }
                            }
                        );
