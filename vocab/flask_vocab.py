@@ -5,6 +5,7 @@ from a scrambled string)
 """
 
 import flask
+from flask import request
 import logging
 
 # Our modules
@@ -58,16 +59,6 @@ def index():
     return flask.render_template('vocab.html')
 
 
-@app.route("/keep_going")
-def keep_going():
-    """
-    After initial use of index, we keep the same scrambled
-    word and try to get more matches
-    """
-    flask.g.vocab = WORDS.as_list()
-    return flask.render_template('vocab.html')
-
-
 @app.route("/success")
 def success():
     return flask.render_template('success.html')
@@ -79,7 +70,7 @@ def success():
 #   a JSON request handler
 #######################
 
-@app.route("/_check", methods=["POST"])
+@app.route("/_check")
 def check():
     """
     User has submitted the form with a word ('attempt')
@@ -92,7 +83,7 @@ def check():
     app.logger.debug("Entering check")
 
     # The data we need, from form and from cookie
-    text = flask.request.form["attempt"]
+    text = request.args.get("text", type=str)
     jumble = flask.session["jumble"]
     matches = flask.session.get("matches", [])  # Default to empty list
 
@@ -100,27 +91,37 @@ def check():
     in_jumble = LetterBag(jumble).contains(text)
     matched = WORDS.has(text)
 
+    #Use dictionary to pass back as JSON object
+    dict_rslt = {"new_msg_found": False, "msg_found_already": False, "msg_not_in_vocab": False, "msg_not_possible": False, "goal_reached": False}
+
+    dict_test = {"test": False, "second_test": True}
+
     # Respond appropriately
     if matched and in_jumble and not (text in matches):
         # Cool, they found a new word
         matches.append(text)
         flask.session["matches"] = matches
+        dict_rslt["new_msg_found"] = True
     elif text in matches:
-        flask.flash("You already found {}".format(text))
+        #flask.flash("You already found {}".format(text))
+        dict_rslt["msg_found_already"] = True
     elif not matched:
-        flask.flash("{} isn't in the list of words".format(text))
+        #flask.flash("{} isn't in the list of words".format(text))
+        dict_rslt["msg_not_in_vocab"] = True
     elif not in_jumble:
-        flask.flash(
-            '"{}" can\'t be made from the letters {}'.format(text, jumble))
+        #flask.flash(
+        #    '"{}" can\'t be made from the letters {}'.format(text, jumble))
+        dict_rslt["msg_not_possible"] = True
     else:
         app.logger.debug("This case shouldn't happen!")
         assert False  # Raises AssertionError
 
-    # Choose page:  Solved enough, or keep going?
+    # If have enough words, then let JS redirect to success page
     if len(matches) >= flask.session["target_count"]:
-       return flask.redirect(flask.url_for("success"))
-    else:
-       return flask.redirect(flask.url_for("keep_going"))
+        dict_rslt["goal_reached"] = True
+        #return flask.redirect(flask.url_for("success"))
+    
+    return flask.jsonify(result=dict_rslt)
 
 
 ###############
