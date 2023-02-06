@@ -77,27 +77,101 @@
                   <label for="attempt">Word:</label>
                   <input id="attempt" name="attempt" type="text" width="15"
                      autocomplete="off"  autofocus />
-                  <input type="submit" name="try" />
                </form>
             </div>
          </div>
+
          <br />
-         {% if session.matches|length is not equalto 0  %}
          <h2>You found </h2>
-         <p id="results">
-            {% for match in session.matches %}
-            {{ match }}
-            {% endfor %}
-         </p>
-         {% endif %}
-         {% with messages = get_flashed_messages() %}
-         {% if messages %}
-         <!-- Mismatch, already found, etc. "flashed" from Python -->
-         {% for message in messages %}
-         <p class="message">{{ message }}</p>
-         {% endfor %}
-         {% endif %}
-         {% endwith %}
+         <p id="results"></p>
+         
+         <p id="message"></p>
+
+         <script>
+            // Suppress normal form submission
+            $("#entry").submit( function(event) {
+               event.preventDefault();
+              });
+
+            // On each keystroke, check if the string is a word found in our vocab list
+            //
+            // We use 'keyup' because the form value
+            // is updated before that event is generated.
+            // keypress is triggered before the input field has been
+            // updated.  Be aware that we'll see non-character keys like
+            // shift and control, so make sure whatever you do with the
+            // event does not depend on it being a letter.
+            //
+            $("#attempt").keyup(function(event) {
+               var txt = $("#attempt").val();  // Current content of the input field
+               var keycode = event.which;      // They key that just went up
+               var letter = String.fromCharCode(keycode);
+
+               // That letter might not be a letter ... it could be the
+               // the backspace key, or even the shift key, because 'keyup'
+               // catches all kinds of keys.  (Also, the difference between
+               // upper and lower case comes from state of shift key + key code,
+               // so ignoring the shift key we get only the upper case letters.
+
+               if (! "ABCDEFGHIJKLMNOPQRSTUVWXYZ".includes(letter)) { return }
+
+               $.getJSON( "/_check", { text: txt },
+                          function(data) {
+                              
+                              //Each of the following vars are a bool
+                              
+                              new_msg = data.result.new_msg_found
+                              already_found = data.result.msg_found_already
+                              not_in_vocab = data.result.msg_not_in_vocab
+                              msg_forbidden = data.result.msg_not_possible
+                              goal = data.result.goal_reached
+
+                              console.log("new_msg_found: " + new_msg)
+                              console.log("msg_already_found: " + already_found)
+                              console.log("msg_not_in_vocab: " + not_in_vocab)
+                              console.log("msg_forbidden: " + msg_forbidden)
+                              console.log("goal_reached: " + goal)
+
+                              //test = data.result.test
+                              //test_second = data.result.second_test
+
+                              //console.log("test: " + test)
+                              //console.log("second test: " + test_second)
+
+                              //console.log("rsval: " + rsval)
+                              /*if (rsval) {
+                                 $("#response").html("That's enough!");
+                                 $("#attempt").val("");
+                              } else {
+                                 $("#response").append(txt.length + " ");
+                              }
+                              */
+                             
+                              if(new_msg) {
+                                 $("#attempt").val(""); //Reset the input
+                                 $("#results").append("<h3><b>"+txt+"</b></h3> ");
+                              }
+                              else if(already_found) {
+                                 $("#message").html("You already found the word: " + "<b>"+txt+"</b>" + "<br>");
+                              }
+                              /*
+                              else if(not_in_vocab) {
+                                 $("#message").append(txt + " isn't in the list of words" + <br />);
+                              }
+                              */
+                              else if(msg_forbidden) {
+                                 $("#message").append("<b>"+txt+"</b>" + " can't be made from the letters listed above <br>");
+                              }
+
+                              if(goal) {
+                                 $("#message").value = "";
+                                 $("#message").html("YOU COMPLETED THE GOAL!, need to redirect to success page<br>");
+                                 //window.location.href = "/success.html"
+                              }
+                           }
+                       );
+               });
+         </script>
       </div>
       <!-- container -->
    </body>
