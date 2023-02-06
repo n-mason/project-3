@@ -118,10 +118,7 @@
 
                $.getJSON( "/_check", { text: txt },
                           function(data) {
-                              
                               //Each of the following vars are a bool
-                              //console.log(window.location.href)
-                              
                               new_msg = data.result.new_msg_found
                               already_found = data.result.msg_found_already
                               not_in_vocab = data.result.msg_not_in_vocab
@@ -133,29 +130,15 @@
                               console.log("msg_not_in_vocab: " + not_in_vocab)
                               console.log("msg_forbidden: " + msg_forbidden)
                               console.log("goal_reached: " + goal)
-
-                              //test = data.result.test
-                              //test_second = data.result.second_test
-
-                              //console.log("test: " + test)
-                              //console.log("second test: " + test_second)
-
-                              //console.log("rsval: " + rsval)
-                              /*if (rsval) {
-                                 $("#response").html("That's enough!");
-                                 $("#attempt").val("");
-                              } else {
-                                 $("#response").append(txt.length + " ");
-                              }
-                              */
+                              console.log("------------------------------")
                              
-                              //expected behaviro is notify if word not in vocab, or word not possible from lettters listed
-                              //and if a word is found from the letters listed, add it on the page
-                              if(new_msg) { //a word was found
+                              // Expected behavior is to notify if word not in vocab, or word not possible from letters listed in anagram
+                              // and if a word is found from the letters listed, add it on the page in the #results section
+                              if(new_msg) { 
                                  $("#attempt").val(""); //Reset the input
                                  $("#results").append("<h4><b>"+txt+"</b></h4>");
                               }
-                              else if(already_found) { //word
+                              else if(already_found) { 
                                  $("#message").html("You already found the word: " + "<b>"+txt+"</b>" + "<br>");
                               }
                               else if(not_in_vocab) {
@@ -166,8 +149,6 @@
                               }
 
                               if(goal) {
-                                 //$("#message").value = "";
-                                 //$("#message").html("YOU COMPLETED THE GOAL!, need to redirect to success page<br>");
                                  window.location.href = "/success"
                               }
                            }
